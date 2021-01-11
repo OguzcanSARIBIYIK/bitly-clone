@@ -4,6 +4,7 @@ import (
 	"bitly-clone/configs/db"
 	"bitly-clone/internal/helpers"
 	"bitly-clone/models"
+	"bitly-clone/models/requests"
 	"github.com/labstack/echo"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
@@ -19,13 +20,19 @@ type RegisterResponse struct {
 
 func Register(c echo.Context) error {
 
-	user := new(models.User)
-	_ = c.Bind(user)
+	userReq := new(requests.UserRegister)
 
-	val := helpers.Validation(user, c)
+	_ = c.Bind(userReq)
+
+	val := helpers.Validation(userReq, c)
 
 	if val != nil {
 		return nil
+	}
+
+	user := models.User{
+		Username: userReq.Username,
+		Password: userReq.Password,
 	}
 
 	checkUser := models.User{}
