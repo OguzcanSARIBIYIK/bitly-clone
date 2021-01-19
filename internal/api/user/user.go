@@ -80,7 +80,7 @@ func Register(c echo.Context) error {
 }
 
 func GetToken(c echo.Context) error {
-	user := new(models.User)
+	user := new(requests.ShowToken)
 
 	_ = c.Bind(user)
 
