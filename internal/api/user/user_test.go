@@ -13,13 +13,11 @@ import (
 func TestCreateUser(t *testing.T) {
 
 	createUser := map[string]string{
-		`{"code":200,"data":"Üyelik oluşturuldu.`:        `{"username":"oguzcan16","password":"123456"}`,
+		`{"code":200,"data":"Üyelik oluşturuldu.`:        `{"username":"oguzcan17","password":"123456"}`,
 		`{"code":400,"data":"Girmiş olduğunuz kullanıcı`: `{"username":"oguzcan99","password":"123456"}`,
 	}
 
 	for i, v := range createUser {
-
-		fmt.Println("create : ", v)
 
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(v))
@@ -28,6 +26,7 @@ func TestCreateUser(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		if assert.NoError(t, Register(c)) {
+			fmt.Println("create : ", v)
 			assert.Contains(t, rec.Body.String(), i)
 		}
 
@@ -44,8 +43,6 @@ func TestGetToken(t *testing.T) {
 
 	for i, v := range getToken {
 
-		fmt.Println("get : ", v)
-
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(v))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -53,6 +50,7 @@ func TestGetToken(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		if assert.NoError(t, GetToken(c)) {
+			fmt.Println("getToken : ", rec.Body.String())
 			assert.Contains(t, rec.Body.String(), i)
 		}
 
