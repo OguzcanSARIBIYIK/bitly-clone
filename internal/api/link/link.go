@@ -18,5 +18,9 @@ func Store(c echo.Context) error {
 		return nil
 	}
 
+	//link := models.Link{
+	//
+	//}
+
 	return nil
 }
