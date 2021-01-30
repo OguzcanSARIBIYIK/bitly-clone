@@ -23,6 +23,7 @@ func main() {
 		g.Use(middleware.Auth())
 
 		g.POST("/link/store", link.Store)
+		g.GET("/link/list", link.List)
 	}
 
 	e.Logger.Fatal(e.Start(":8000"))

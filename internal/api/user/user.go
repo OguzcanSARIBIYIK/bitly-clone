@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-type RegisterResponse struct {
-	models.Response
-	Token string `json:"token"`
-}
-
 func Register(c echo.Context) error {
 
 	userReq := new(requests.UserRegister)
@@ -40,8 +35,8 @@ func Register(c echo.Context) error {
 
 	if checkUser.ID > 0 {
 		return c.JSON(http.StatusBadRequest, models.Response{
-			Code: 400,
-			Data: "Girmiş olduğunuz kullanıcı adı sistemde kayıtlıdır.",
+			Code:        400,
+			Description: "Girmiş olduğunuz kullanıcı adı sistemde kayıtlıdır.",
 		})
 	}
 
@@ -50,8 +45,8 @@ func Register(c echo.Context) error {
 	if err != nil {
 
 		return c.JSON(http.StatusBadRequest, models.Response{
-			Code: 400,
-			Data: "Şifre oluşturulurken hata ile karşılaşıldı.",
+			Code:        400,
+			Description: "Şifre oluşturulurken hata ile karşılaşıldı.",
 		})
 
 	}
@@ -63,18 +58,16 @@ func Register(c echo.Context) error {
 	if err != nil {
 
 		return c.JSON(http.StatusBadRequest, models.Response{
-			Code: 400,
-			Data: "Üyelik oluşturulamadı.",
+			Code:        400,
+			Description: "Üyelik oluşturulamadı.",
 		})
 
 	}
 
-	return c.JSON(http.StatusCreated, RegisterResponse{
-		Response: models.Response{
-			Code: 200,
-			Data: "Üyelik oluşturuldu.",
-		},
-		Token: user.Token,
+	return c.JSON(http.StatusCreated, models.Response{
+		Code:        201,
+		Description: "Üyelik oluşturuldu.",
+		Data:        user.Token,
 	})
 
 }
