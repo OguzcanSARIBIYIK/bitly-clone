@@ -1,7 +1,6 @@
 package main
 
 import (
-	test "bitly-clone/internal/api"
 	"bitly-clone/internal/api/link"
 	"bitly-clone/internal/api/middleware"
 	"bitly-clone/internal/api/user"
@@ -9,10 +8,10 @@ import (
 )
 
 func main() {
+
 	e := echo.New()
 
-	e.GET("/", test.Main)
-
+	e.GET("/:link", link.Redirect)
 	e.POST("/register", user.Register)
 	e.POST("/show/token", user.GetToken)
 
@@ -23,6 +22,7 @@ func main() {
 		g.Use(middleware.Auth())
 
 		g.POST("/link/store", link.Store)
+		g.DELETE("/link/delete", link.Delete)
 		g.GET("/link/list", link.List)
 	}
 

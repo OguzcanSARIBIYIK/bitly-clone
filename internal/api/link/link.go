@@ -10,6 +10,27 @@ import (
 	"net/http"
 )
 
+func Redirect(c echo.Context) error {
+	url := c.Param("link")
+
+	var link models.Link
+	db.MyDB.
+		Model(&models.Link{}).
+		Where("short_url = ?", url).
+		Find(&link)
+
+	if link.ID == 0 {
+		return c.JSON(http.StatusBadRequest, models.Response{
+			Code:        http.StatusBadRequest,
+			Description: "Link bulunamadı..",
+		})
+	}
+
+	c.Redirect(http.StatusMovedPermanently, link.Url)
+
+	return nil
+}
+
 func Store(c echo.Context) error {
 
 	linkReq := new(requests.LinkStore)
@@ -32,7 +53,7 @@ func Store(c echo.Context) error {
 
 	if linkCheck.ID > 0 {
 		return c.JSON(http.StatusOK, models.Response{
-			Code:        200,
+			Code:        http.StatusOK,
 			Description: "Girmiş olduğunuz url sistemde zaten kayıtlı!",
 			Data:        response.ShortUrlResponse{ShortUrl: linkCheck.ShortUrl},
 		})
@@ -48,28 +69,70 @@ func Store(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.Response{
-			Code:        400,
+			Code:        http.StatusBadRequest,
 			Description: "Link oluşturulamadı.",
 		})
 	}
 
 	return c.JSON(http.StatusCreated, models.Response{
-		Code:        201,
+		Code:        http.StatusCreated,
 		Description: "Kısa link oluşturuldu.",
 		Data:        link,
 	})
 }
 
-func List(c echo.Context) error {
+func Delete(c echo.Context) error {
 
+	linkReq := new(requests.LinkDelete)
+
+	_ = c.Bind(linkReq)
+
+	user := helpers.GetUser(c)
+
+	val := helpers.Validation(linkReq, c)
+
+	if val != nil {
+		return nil
+	}
+
+	var linkCheck models.Link
+	db.MyDB.Model(&models.Link{}).
+		Where("user_id = ?", user.ID).
+		Where("id = ?", linkReq.ID).
+		First(&linkCheck)
+
+	if linkCheck.ID == 0 {
+		return c.JSON(http.StatusBadRequest, models.Response{
+			Code:        http.StatusBadRequest,
+			Description: "Link bulunamadı..",
+		})
+	}
+
+	err := db.MyDB.Delete(&linkCheck).Error
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response{
+			Code:        http.StatusBadRequest,
+			Description: "Link silinemedi.",
+		})
+	}
+
+	return c.JSON(http.StatusCreated, models.Response{
+		Code:        http.StatusCreated,
+		Description: "Link silindi.",
+	})
+}
+
+func List(c echo.Context) error {
 	user := helpers.GetUser(c)
 
 	var links []models.Link
 
-	db.MyDB.Model(&models.Link{}).Where("user_id = ?", user.ID).Find(&links)
+	query := db.MyDB.
+		Model(&models.Link{}).
+		Where("user_id = ?", user.ID)
 
-	return c.JSON(http.StatusOK, models.Response{
-		Code: 200,
-		Data: links,
-	})
+	res := helpers.Paginate(query, helpers.GetPage(c), &links)
+
+	return c.JSON(http.StatusOK, res)
 }

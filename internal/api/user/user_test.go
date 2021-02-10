@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -26,7 +25,6 @@ func TestCreateUser(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		if assert.NoError(t, Register(c)) {
-			fmt.Println("create : ", v)
 			assert.Contains(t, rec.Body.String(), i)
 		}
 
@@ -50,7 +48,6 @@ func TestGetToken(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		if assert.NoError(t, GetToken(c)) {
-			fmt.Println("getToken : ", rec.Body.String())
 			assert.Contains(t, rec.Body.String(), i)
 		}
 
