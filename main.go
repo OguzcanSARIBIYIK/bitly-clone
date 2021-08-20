@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bitly-clone/internal/api/link"
-	"bitly-clone/internal/api/middleware"
-	"bitly-clone/internal/api/user"
+	"bitly-clone/internal/repository"
+	"bitly-clone/internal/router"
+
 	"github.com/labstack/echo"
 )
 
@@ -11,20 +11,9 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/:link", link.Redirect)
-	e.POST("/register", user.Register)
-	e.POST("/show/token", user.GetToken)
+	router.Init(e)
 
-	e.Use()
-
-	g := e.Group("")
-	{
-		g.Use(middleware.Auth())
-
-		g.POST("/link/store", link.Store)
-		g.DELETE("/link/delete", link.Delete)
-		g.GET("/link/list", link.List)
-	}
+	repository.Init()
 
 	e.Logger.Fatal(e.Start(":8000"))
 }

@@ -5,5 +5,5 @@ type LinkStore struct {
 }
 
 type LinkDelete struct {
-	ID int `validate:"required" json:"id"`
+	ID uint `validate:"required" json:"id"`
 }

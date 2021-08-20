@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"bitly-clone/configs/db"
+	"bitly-clone/internal/repository"
 	"bitly-clone/models"
-	"github.com/labstack/echo"
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
 func Auth() echo.MiddlewareFunc {
@@ -13,7 +14,7 @@ func Auth() echo.MiddlewareFunc {
 			token := c.Request().Header.Get("token")
 
 			var user models.User
-			db.MyDB.Model(&models.User{}).Where("token = ?", token).First(&user)
+			repository.Get().User().FindByToken(token, &user)
 			if user.ID == 0 {
 				return c.JSON(http.StatusBadRequest, models.Response{
 					Code: 400,

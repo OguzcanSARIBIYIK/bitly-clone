@@ -1,23 +1,21 @@
 package link
 
 import (
-	"bitly-clone/configs/db"
 	"bitly-clone/internal/helpers"
+	"bitly-clone/internal/repository"
 	"bitly-clone/models"
 	"bitly-clone/models/requests"
 	"bitly-clone/models/response"
-	"github.com/labstack/echo"
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
 func Redirect(c echo.Context) error {
 	url := c.Param("link")
 
 	var link models.Link
-	db.MyDB.
-		Model(&models.Link{}).
-		Where("short_url = ?", url).
-		Find(&link)
+	repository.Get().Link().FindByShortURL(nil, url, &link)
 
 	if link.ID == 0 {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -46,10 +44,7 @@ func Store(c echo.Context) error {
 	}
 
 	var linkCheck models.Link
-	db.MyDB.Model(&models.Link{}).
-		Where("user_id = ?", user.ID).
-		Where("url = ?", linkReq.Url).
-		First(&linkCheck)
+	repository.Get().Link().FindByURL(&user.ID, linkReq.Url, &linkCheck)
 
 	if linkCheck.ID > 0 {
 		return c.JSON(http.StatusOK, models.Response{
@@ -65,7 +60,7 @@ func Store(c echo.Context) error {
 		ShortUrl: helpers.CreateLink(),
 	}
 
-	err := db.MyDB.Create(&link).Error
+	err := repository.Get().Link().Create(&link)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -96,10 +91,7 @@ func Delete(c echo.Context) error {
 	}
 
 	var linkCheck models.Link
-	db.MyDB.Model(&models.Link{}).
-		Where("user_id = ?", user.ID).
-		Where("id = ?", linkReq.ID).
-		First(&linkCheck)
+	repository.Get().Link().FindByID(&user.ID, linkReq.ID, &linkCheck)
 
 	if linkCheck.ID == 0 {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -108,7 +100,7 @@ func Delete(c echo.Context) error {
 		})
 	}
 
-	err := db.MyDB.Delete(&linkCheck).Error
+	err := repository.Get().Link().Delete(&linkCheck)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -128,9 +120,7 @@ func List(c echo.Context) error {
 
 	var links []models.Link
 
-	query := db.MyDB.
-		Model(&models.Link{}).
-		Where("user_id = ?", user.ID)
+	query := repository.Get().Link().List(user.ID)
 
 	res := helpers.Paginate(query, helpers.GetPage(c), &links)
 

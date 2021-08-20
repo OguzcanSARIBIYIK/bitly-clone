@@ -3,14 +3,16 @@ package user
 import (
 	"bitly-clone/configs/db"
 	"bitly-clone/internal/helpers"
+	"bitly-clone/internal/repository"
 	"bitly-clone/models"
 	"bitly-clone/models/requests"
-	"github.com/labstack/echo"
-	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/labstack/echo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c echo.Context) error {
@@ -31,7 +33,7 @@ func Register(c echo.Context) error {
 	}
 
 	checkUser := models.User{}
-	db.MyDB.Model(checkUser).Where("username = ?", user.Username).Scan(&checkUser)
+	repository.Get().User().FindByUsername(user.Username, &checkUser)
 
 	if checkUser.ID > 0 {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -53,7 +55,7 @@ func Register(c echo.Context) error {
 
 	user.Password = string(hashedPassword)
 	user.Token = createToken()
-	err = db.MyDB.Create(&user).Error
+	err = repository.Get().User().Create(&user)
 
 	if err != nil {
 
@@ -84,7 +86,7 @@ func GetToken(c echo.Context) error {
 	}
 
 	checkUser := models.User{}
-	db.MyDB.Model(checkUser).Where("username = ?", user.Username).Scan(&checkUser)
+	repository.Get().User().FindByUsername(user.Username, &checkUser)
 
 	if checkUser.ID == 0 {
 		return c.JSON(http.StatusBadRequest, models.Response{
@@ -111,7 +113,7 @@ func createToken() string {
 	str := ""
 	check := true
 	var user models.User
-	for check == true {
+	for check {
 		a := []string{"1", "2", "3", "4", "5", "6", "7", "8", "a", "b", "c", "d", "e", "A", "B", "C", "D", "E", "X", "U", "L", "DF", "qX", "fgQo"}
 		rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
